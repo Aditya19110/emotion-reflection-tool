@@ -60,3 +60,8 @@ A simple mobile-first web app that allows users to reflect on their emotions by 
 - Code quality & structure
 - API integration approach
 - UI/UX polish and responsiveness
+
+# 👨‍💻 Developed By
+
+Aditya Kulkarni
+aditya.kulkanicse@gmail.com
