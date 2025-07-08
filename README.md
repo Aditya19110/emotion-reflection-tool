@@ -31,7 +31,7 @@ A simple mobile-first web app that allows users to reflect on their emotions by 
 
 2. Install FastAPI and Uvicorn:
    ```bash
-   pip install fastapi uvicorn
+   pip install -r requirements.txt
    ```
 
 3. Run the API server:
