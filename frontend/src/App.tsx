@@ -26,18 +26,50 @@ function App() {
       const data = await res.json();
       setResult(data);
     } catch (err) {
-      setError("Failed to analyze emotion.");
+      setError("Failed to analyze emotion. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="App" style={{ padding: "2rem", maxWidth: 500, margin: "0 auto" }}>
-      <h1>Emotion Reflection Tool</h1>
-      <form onSubmit={handleSubmit}>
+    <div
+      className="App"
+      style={{
+        minHeight: "100vh",
+        backgroundColor: "#f0f2f5",
+        padding: "2rem",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        fontFamily: "'Inter', sans-serif",
+      }}
+    >
+      <h1 style={{ fontSize: "2rem", marginBottom: "1.5rem", color: "#333" }}>
+        Emotion Reflection Tool 💬
+      </h1>
+
+      <form
+        onSubmit={handleSubmit}
+        style={{
+          width: "100%",
+          maxWidth: "500px",
+          backgroundColor: "#fff",
+          padding: "2rem",
+          borderRadius: "1rem",
+          boxShadow: "0 10px 25px rgba(0,0,0,0.08)",
+        }}
+      >
         <textarea
-          style={{ width: "100%", padding: "1rem", borderRadius: 8, marginBottom: "1rem" }}
+          style={{
+            width: "100%",
+            padding: "1rem",
+            borderRadius: 10,
+            border: "1px solid #ccc",
+            resize: "none",
+            fontSize: "1rem",
+            marginBottom: "1rem",
+          }}
           placeholder="How are you feeling today?"
           rows={4}
           value={text}
@@ -51,20 +83,28 @@ function App() {
             padding: "0.75rem",
             backgroundColor: "#007bff",
             color: "#fff",
+            fontSize: "1rem",
             border: "none",
             borderRadius: 8,
             cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "0.5rem",
+            height: "48px",
           }}
           disabled={loading}
         >
-          {loading ? "Analyzing..." : "Submit"}
+          {loading ? <div className="spinner" /> : "Submit"}
         </button>
+
+        {error && (
+          <p style={{ color: "red", marginTop: "1rem", textAlign: "center" }}>{error}</p>
+        )}
       </form>
 
-      {error && <p style={{ color: "red", marginTop: "1rem" }}>{error}</p>}
-
       {result && (
-        <div style={{ marginTop: "2rem" }}>
+        <div style={{ marginTop: "2rem", width: "100%", maxWidth: "500px" }}>
           <EmotionCard emotion={result.emotion} confidence={result.confidence} />
         </div>
       )}
