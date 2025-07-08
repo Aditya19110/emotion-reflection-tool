@@ -1,3 +1,6 @@
+![React](https://img.shields.io/badge/frontend-react-blue)
+![FastAPI](https://img.shields.io/badge/backend-fastapi-green)
+![TypeScript](https://img.shields.io/badge/language-typescript-lightblue)
 # Emotion Reflection Tool 
 
 A simple mobile-first web app that allows users to reflect on their emotions by entering a short piece of text (e.g., “I feel nervous about my first job interview”). It uses a mock backend to return a fake "emotion analysis" with a confidence score.
