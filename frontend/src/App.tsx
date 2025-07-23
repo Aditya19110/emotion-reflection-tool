@@ -2,9 +2,16 @@ import React, { useState } from "react";
 import EmotionCard from "./components/EmotionCard";
 import "./App.css";
 
+interface EmotionResult {
+  emotion: string;
+  confidence: number;
+  description: string;
+  suggestions: string[];
+}
+
 function App() {
   const [text, setText] = useState("");
-  const [result, setResult] = useState<{ emotion: string; confidence: number } | null>(null);
+  const [result, setResult] = useState<EmotionResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -25,89 +32,88 @@ function App() {
 
       const data = await res.json();
       setResult(data);
-    } catch (err) {
-      setError("Failed to analyze emotion. Please try again.");
+    } catch (err: any) {
+      console.error("Error:", err);
+      if (err.message.includes("Failed to fetch")) {
+        setError("Cannot connect to server. Please make sure the backend is running on port 8000.");
+      } else {
+        setError("Failed to analyze emotion. Please try again.");
+      }
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div
-      className="App"
-      style={{
-        minHeight: "100vh",
-        backgroundColor: "#f0f2f5",
-        padding: "2rem",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        fontFamily: "'Inter', sans-serif",
-      }}
-    >
-      <h1 style={{ fontSize: "2rem", marginBottom: "1.5rem", color: "#333" }}>
-        Emotion Reflection Tool 💬
-      </h1>
+    <div className="app-container">
+      <div className="hero-section">
+        <h1 className="main-title">
+          <span className="emoji">💭</span>
+          Emotion Reflection Tool
+        </h1>
+        <p className="subtitle">
+          Share your thoughts and discover the emotions behind your words
+        </p>
+      </div>
 
-      <form
-        onSubmit={handleSubmit}
-        style={{
-          width: "100%",
-          maxWidth: "500px",
-          backgroundColor: "#fff",
-          padding: "2rem",
-          borderRadius: "1rem",
-          boxShadow: "0 10px 25px rgba(0,0,0,0.08)",
-        }}
-      >
-        <textarea
-          style={{
-            width: "100%",
-            padding: "1rem",
-            borderRadius: 10,
-            border: "1px solid #ccc",
-            resize: "none",
-            fontSize: "1rem",
-            marginBottom: "1rem",
-          }}
-          placeholder="How are you feeling today?"
-          rows={4}
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          required
-        />
-        <button
-          type="submit"
-          style={{
-            width: "100%",
-            padding: "0.75rem",
-            backgroundColor: "#007bff",
-            color: "#fff",
-            fontSize: "1rem",
-            border: "none",
-            borderRadius: 8,
-            cursor: "pointer",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: "0.5rem",
-            height: "48px",
-          }}
-          disabled={loading}
-        >
-          {loading ? <div className="spinner" /> : "Submit"}
-        </button>
+      <div className="content-container">
+        <form onSubmit={handleSubmit} className="reflection-form">
+          <div className="form-group">
+            <label htmlFor="reflection-text" className="form-label">
+              How are you feeling today?
+            </label>
+            <textarea
+              id="reflection-text"
+              className="reflection-textarea"
+              placeholder="Express your thoughts and feelings here..."
+              rows={4}
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              required
+              maxLength={1000}
+            />
+            <div className="char-counter">
+              {text.length}/1000 characters
+            </div>
+          </div>
+          
+          <button
+            type="submit"
+            className={`submit-button ${loading ? 'loading' : ''}`}
+            disabled={loading || !text.trim()}
+          >
+            {loading ? (
+              <>
+                <div className="spinner" />
+                Analyzing...
+              </>
+            ) : (
+              <>
+                <span className="button-icon">🔍</span>
+                Analyze Emotions
+              </>
+            )}
+          </button>
 
-        {error && (
-          <p style={{ color: "red", marginTop: "1rem", textAlign: "center" }}>{error}</p>
+          {error && (
+            <div className="error-message">
+              <span className="error-icon">⚠️</span>
+              {error}
+            </div>
+          )}
+        </form>
+
+        {result && (
+          <div className="result-container">
+            <EmotionCard 
+              emotion={result.emotion} 
+              confidence={result.confidence}
+              description={result.description}
+              suggestions={result.suggestions}
+            />
+          </div>
         )}
-      </form>
-
-      {result && (
-        <div style={{ marginTop: "2rem", width: "100%", maxWidth: "500px" }}>
-          <EmotionCard emotion={result.emotion} confidence={result.confidence} />
-        </div>
-      )}
+      </div>
     </div>
   );
 }
