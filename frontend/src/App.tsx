@@ -1,25 +1,39 @@
-import React, { useState } from "react";
-import EmotionCard from "./components/EmotionCard";
-import "./App.css";
-
-interface EmotionResult {
-  emotion: string;
-  confidence: number;
-  description: string;
-  suggestions: string[];
-}
+import React, { useState, useEffect } from 'react';
+import Layout from './components/Layout';
+import ReflectionInput from './components/ReflectionInput';
+import EmotionCard from './components/EmotionCard';
+import HistorySidebar from './components/HistorySidebar';
+import { EmotionResult, HistoryItem } from './types';
+import { Menu } from 'lucide-react';
 
 function App() {
   const [text, setText] = useState("");
   const [result, setResult] = useState<EmotionResult | null>(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [history, setHistory] = useState<HistoryItem[]>([]);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  // Fetch history on mount
+  useEffect(() => {
+    fetchHistory();
+  }, []);
+
+  const fetchHistory = async () => {
+    try {
+      const res = await fetch("http://localhost:8000/history");
+      if (res.ok) {
+        const data = await res.json();
+        setHistory(data);
+      }
+    } catch (err) {
+      // console.error("Failed to fetch history:", err);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setResult(null);
-    setError("");
 
     try {
       const res = await fetch("http://localhost:8000/analyze", {
@@ -32,89 +46,63 @@ function App() {
 
       const data = await res.json();
       setResult(data);
-    } catch (err: any) {
-      console.error("Error:", err);
-      if (err.message.includes("Failed to fetch")) {
-        setError("Cannot connect to server. Please make sure the backend is running on port 8000.");
-      } else {
-        setError("Failed to analyze emotion. Please try again.");
-      }
+      
+      // Refresh history silently
+      fetchHistory();
+      
+      // Scroll to result
+      setTimeout(() => {
+        window.scrollTo({ top: 300, behavior: 'smooth' });
+      }, 100);
+
+    } catch (err) {
+        alert("Something went wrong. Please check if the backend is running.");
+        // console.error(err);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="app-container">
-      <div className="hero-section">
-        <h1 className="main-title">
-          <span className="emoji">💭</span>
-          Emotion Reflection Tool
-        </h1>
-        <p className="subtitle">
-          Share your thoughts and discover the emotions behind your words
-        </p>
-      </div>
+    <Layout>
+      <button 
+        onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+        className="fixed top-6 left-6 z-50 p-3 bg-white/80 backdrop-blur-md rounded-full shadow-lg hover:shadow-xl transition-all hover:scale-105 border border-gray-100 text-gray-700"
+      >
+        <Menu className="w-6 h-6" />
+      </button>
 
-      <div className="content-container">
-        <form onSubmit={handleSubmit} className="reflection-form">
-          <div className="form-group">
-            <label htmlFor="reflection-text" className="form-label">
-              How are you feeling today?
-            </label>
-            <textarea
-              id="reflection-text"
-              className="reflection-textarea"
-              placeholder="Express your thoughts and feelings here..."
-              rows={4}
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-              required
-              maxLength={1000}
-            />
-            <div className="char-counter">
-              {text.length}/1000 characters
+      <HistorySidebar 
+        history={history} 
+        isOpen={isSidebarOpen} 
+        onClose={() => setIsSidebarOpen(false)} 
+      />
+
+      <div className={`flex-1 transition-all duration-300 ${isSidebarOpen ? 'ml-0 md:ml-80' : 'ml-0'}`}>
+         <div className="container mx-auto px-4 py-12 md:py-20 flex flex-col items-center">
+            
+            <div className="text-center mb-12">
+                <h1 className="text-5xl md:text-6xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 mb-6 tracking-tight">
+                    Emotion Reflection
+                </h1>
+                <p className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
+                    Uncover the hidden emotions in your words with our AI-powered analysis tool.
+                </p>
             </div>
-          </div>
-          
-          <button
-            type="submit"
-            className={`submit-button ${loading ? 'loading' : ''}`}
-            disabled={loading || !text.trim()}
-          >
-            {loading ? (
-              <>
-                <div className="spinner" />
-                Analyzing...
-              </>
-            ) : (
-              <>
-                <span className="button-icon">🔍</span>
-                Analyze Emotions
-              </>
+
+            <ReflectionInput 
+                value={text} 
+                onChange={setText} 
+                onSubmit={handleSubmit} 
+                isLoading={loading} 
+            />
+
+            {result && (
+                <EmotionCard {...result} />
             )}
-          </button>
-
-          {error && (
-            <div className="error-message">
-              <span className="error-icon">⚠️</span>
-              {error}
-            </div>
-          )}
-        </form>
-
-        {result && (
-          <div className="result-container">
-            <EmotionCard 
-              emotion={result.emotion} 
-              confidence={result.confidence}
-              description={result.description}
-              suggestions={result.suggestions}
-            />
-          </div>
-        )}
+         </div>
       </div>
-    </div>
+    </Layout>
   );
 }
 
