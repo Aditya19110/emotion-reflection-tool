@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { EmotionResult } from '../types';
-import { Sparkles, Activity, Quote, Lightbulb, Smile, Frown, Flame, CloudRain, Wind, Rocket, Leaf } from 'lucide-react';
+import { Sparkles, Activity, Quote, Lightbulb, Smile, Flame, CloudRain, Wind, Rocket, Leaf } from 'lucide-react';
 
 interface EmotionCardProps extends EmotionResult {}
 
